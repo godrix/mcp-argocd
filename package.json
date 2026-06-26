@@ -1,6 +1,6 @@
 {
   "name": "@godrix/argocd-mcp",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "MCP Server for Argo CD. SSO login via argocd CLI, REST API tools from swagger catalog.",
   "type": "module",
   "main": "build/server.js",

@@ -15,6 +15,7 @@ import {
   summarizeObservabilityView,
 } from "../utils/applicationObservability.js";
 import { formatArgoCdHttpError } from "../utils/argoCdHttp.js";
+import { parseLogStream } from "../utils/parseLogStream.js";
 import {
   findUnhealthyResources,
   ResourceTreeResponse,
@@ -769,31 +770,3 @@ function findUnhealthyPods(tree: ResourceTreeResponse) {
   });
 }
 
-function parseLogStream(raw: string): LogLine[] {
-  const lines: LogLine[] = [];
-
-  for (const chunk of raw.split("\n")) {
-    const trimmed = chunk.trim();
-    if (!trimmed) {
-      continue;
-    }
-
-    try {
-      const entry = JSON.parse(trimmed) as {
-        content?: string;
-        podName?: string;
-        timeStampStr?: string;
-        timeStamp?: { seconds?: string };
-      };
-      lines.push({
-        content: entry.content,
-        podName: entry.podName,
-        timeStamp: entry.timeStampStr ?? entry.timeStamp?.seconds,
-      });
-    } catch {
-      lines.push({ content: trimmed });
-    }
-  }
-
-  return lines;
-}

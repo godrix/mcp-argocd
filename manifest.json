@@ -1,7 +1,7 @@
 {
   "manifest_version": "0.3",
   "name": "@godrix/argocd-mcp",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "MCP Server for Argo CD: multi-environment profiles, SSO login, application search cache, and REST API tools.",
   "author": {
     "name": "Godrix"
