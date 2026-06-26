@@ -1,0 +1,10 @@
+.git
+src/
+test/
+scripts/
+*.ts
+tsconfig.json
+.env
+.env.*
+.github/
+.cursor/

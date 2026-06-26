@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Argo CD Observability</title>
+  <style>
+    :root {
+      --bg: var(--color-background-primary, #0f1419);
+      --surface: var(--color-background-secondary, #1a2332);
+      --border: var(--color-border-primary, #2d3a4d);
+      --text: var(--color-text-primary, #e7ecf3);
+      --muted: var(--color-text-secondary, #8b9cb3);
+      --accent: var(--color-accent-primary, #4d9fff);
+      --healthy: #3ecf8e;
+      --degraded: #f5a623;
+      --missing: #e5534b;
+      --synced: #3ecf8e;
+      --outofsync: #f5a623;
+      --unknown: #8b9cb3;
+      font-family: var(--font-sans, system-ui, -apple-system, sans-serif);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      padding: 16px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .state {
+      text-align: center;
+      padding: 32px 16px;
+      color: var(--muted);
+    }
+
+    .state.error { color: var(--missing); }
+
+    .header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .title-block h1 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 4px;
+      word-break: break-all;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      border: 1px solid var(--border);
+      background: var(--surface);
+    }
+
+    .badge.health-healthy, .badge.sync-synced { border-color: var(--healthy); color: var(--healthy); }
+    .badge.health-degraded, .badge.health-progressing,
+    .badge.sync-outofsync { border-color: var(--degraded); color: var(--degraded); }
+    .badge.health-missing, .badge.health-unknown { border-color: var(--missing); color: var(--missing); }
+    .badge.sync-unknown { border-color: var(--unknown); color: var(--unknown); }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+    }
+
+    .card h2 {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .card dl { display: grid; gap: 6px; }
+    .card dt { color: var(--muted); font-size: 12px; }
+    .card dd { font-size: 13px; word-break: break-all; }
+
+    .section { margin-bottom: 16px; }
+    .section h2 {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .conditions { display: grid; gap: 8px; }
+
+    .condition {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+    }
+
+    .condition-type {
+      font-weight: 600;
+      font-size: 12px;
+      margin-bottom: 4px;
+    }
+
+    .condition-msg { font-size: 13px; color: var(--muted); }
+    .condition-time { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      font-weight: 600;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    button {
+      appearance: none;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    button:hover { border-color: var(--accent); color: var(--accent); }
+    button.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+    button.primary:hover { opacity: 0.9; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .empty { color: var(--muted); font-style: italic; padding: 8px 0; }
+    .footer { margin-top: 12px; font-size: 11px; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <div id="root">
+    <div class="state">Carregando observabilidade…</div>
+  </div>
+
+  <script type="module">
+    /*___MCP_ARGOCD_EXT_APPS_BUNDLE___*/
+    const { App } = globalThis.ExtApps;
+
+    const root = document.getElementById("root");
+    let currentView = null;
+    let refreshing = false;
+
+    const app = new App(
+      { name: "Argo CD Observability", version: "0.6.0" },
+      {},
+      { autoResize: true }
+    );
+
+    function badgeClass(prefix, value) {
+      const normalized = String(value ?? "unknown").toLowerCase().replace(/\s+/g, "");
+      return `${prefix}-${normalized}`;
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function extractView(result) {
+      if (!result) return null;
+      if (result.structuredContent && result.structuredContent.name) {
+        return result.structuredContent;
+      }
+      const text = result.content?.[0]?.text;
+      if (!text) return null;
+      try {
+        const parsed = JSON.parse(text);
+        return parsed.view ?? parsed;
+      } catch {
+        return null;
+      }
+    }
+
+    function render(view) {
+      if (!view?.name) {
+        root.innerHTML = '<div class="state error">Dados de observabilidade indisponíveis.</div>';
+        return;
+      }
+
+      currentView = view;
+      const unhealthyRows = (view.unhealthyResources ?? [])
+        .map(
+          (r) =>
+            `<tr>
+              <td>${escapeHtml(r.kind)}</td>
+              <td>${escapeHtml(r.name)}</td>
+              <td>${escapeHtml(r.namespace ?? "—")}</td>
+              <td>${escapeHtml(r.health ?? "—")}</td>
+            </tr>`
+        )
+        .join("");
+
+      const conditions = (view.conditions ?? [])
+        .map(
+          (c) =>
+            `<div class="condition">
+              <div class="condition-type">${escapeHtml(c.type)}</div>
+              <div class="condition-msg">${escapeHtml(c.message)}</div>
+              ${c.lastTransitionTime ? `<div class="condition-time">${escapeHtml(c.lastTransitionTime)}</div>` : ""}
+            </div>`
+        )
+        .join("");
+
+      root.innerHTML = `
+        <div class="header">
+          <div class="title-block">
+            <h1>${escapeHtml(view.name)}</h1>
+            <div class="subtitle">${escapeHtml(view.profile)} · ${escapeHtml(view.namespace)} · ${escapeHtml(view.project)}</div>
+          </div>
+          <div class="badges">
+            <span class="badge ${badgeClass("health", view.healthStatus)}">Health: ${escapeHtml(view.healthStatus)}</span>
+            <span class="badge ${badgeClass("sync", view.syncStatus)}">Sync: ${escapeHtml(view.syncStatus)}</span>
+            ${view.operationPhase ? `<span class="badge">Op: ${escapeHtml(view.operationPhase)}</span>` : ""}
+          </div>
+        </div>
+
+        <div class="grid">
+          <div class="card">
+            <h2>Git</h2>
+            <dl>
+              <dt>Repositório</dt><dd>${escapeHtml(view.repoUrl ?? "—")}</dd>
+              <dt>Path</dt><dd>${escapeHtml(view.path ?? "—")}</dd>
+              <dt>Target revision</dt><dd>${escapeHtml(view.targetRevision ?? "—")}</dd>
+              <dt>Revision atual</dt><dd>${escapeHtml(view.revision ?? "—")}</dd>
+            </dl>
+          </div>
+        </div>
+
+        <div class="section">
+          <h2>Conditions</h2>
+          ${conditions || '<div class="empty">Nenhuma condition reportada.</div>'}
+        </div>
+
+        <div class="section">
+          <h2>Recursos unhealthy</h2>
+          ${
+            unhealthyRows
+              ? `<table>
+                  <thead><tr><th>Kind</th><th>Name</th><th>Namespace</th><th>Health</th></tr></thead>
+                  <tbody>${unhealthyRows}</tbody>
+                </table>`
+              : '<div class="empty">Nenhum recurso unhealthy.</div>'
+          }
+        </div>
+
+        <div class="actions">
+          <button type="button" class="primary" id="open-argo">Abrir no Argo CD</button>
+          <button type="button" id="refresh-btn" ${refreshing ? "disabled" : ""}>Atualizar</button>
+        </div>
+
+        <div class="footer">Atualizado: ${escapeHtml(view.fetchedAt)}</div>
+      `;
+
+      document.getElementById("open-argo")?.addEventListener("click", () => {
+        if (view.argoCdUrl) {
+          app.openLink({ url: view.argoCdUrl });
+        }
+      });
+
+      document.getElementById("refresh-btn")?.addEventListener("click", () => {
+        refreshView();
+      });
+    }
+
+    async function refreshView() {
+      if (!currentView || refreshing) return;
+      refreshing = true;
+      const btn = document.getElementById("refresh-btn");
+      if (btn) btn.disabled = true;
+
+      try {
+        const result = await app.callServerTool({
+          name: "refresh-application-observability",
+          arguments: {
+            profile: currentView.profile,
+            name: currentView.name,
+          },
+        });
+        if (result.isError) {
+          root.innerHTML = `<div class="state error">${escapeHtml(result.content?.[0]?.text ?? "Erro ao atualizar")}</div>`;
+          return;
+        }
+        const view = extractView(result);
+        render(view);
+      } catch (error) {
+        root.innerHTML = `<div class="state error">${escapeHtml(error?.message ?? String(error))}</div>`;
+      } finally {
+        refreshing = false;
+      }
+    }
+
+    app.ontoolresult = (params) => {
+      if (params.isError) {
+        root.innerHTML = `<div class="state error">${escapeHtml(params.content?.[0]?.text ?? "Erro na tool")}</div>`;
+        return;
+      }
+      render(extractView(params));
+    };
+
+    await app.connect();
+  </script>
+</body>
+</html>

@@ -1,0 +1,52 @@
+{
+  "name": "@godrix/mcp-argocd",
+  "version": "0.6.0",
+  "description": "MCP Server for Argo CD. SSO login via argocd CLI, REST API tools from swagger catalog.",
+  "type": "module",
+  "main": "build/server.js",
+  "bin": {
+    "mcp-argocd": "build/server.js"
+  },
+  "scripts": {
+    "build": "tsc && node scripts/copy-widgets.mjs && node scripts/sync-manifest-version.mjs",
+    "test": "vitest run",
+    "prepare": "npm run build",
+    "start": "node build/server.js",
+    "dev:mcp": "npm run build && npx @modelcontextprotocol/inspector node build/server.js",
+    "pack:mcpb": "npm run build && npx --yes @anthropic-ai/mcpb pack",
+    "pack:mcpb:slim": "npm run build && rm -rf node_modules && npm ci --omit=dev --ignore-scripts && npx --yes @anthropic-ai/mcpb pack"
+  },
+  "keywords": [
+    "mcp",
+    "argocd",
+    "gitops",
+    "model-context-protocol"
+  ],
+  "author": "Godrix",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "build/",
+    "swagger.txt",
+    "LICENSE",
+    "README.md"
+  ],
+  "dependencies": {
+    "@modelcontextprotocol/ext-apps": "^1.7.4",
+    "@modelcontextprotocol/sdk": "^1.9.0",
+    "axios": "^1.7.9",
+    "dotenv": "^16.5.0",
+    "yaml": "^2.7.0",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.14.0",
+    "typescript": "^5.8.3",
+    "vitest": "^4.1.9"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

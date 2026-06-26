@@ -1,0 +1,88 @@
+{
+  "manifest_version": "0.3",
+  "name": "@godrix/mcp-argocd",
+  "version": "0.6.0",
+  "description": "MCP Server for Argo CD: multi-environment profiles, SSO login, application search cache, and REST API tools.",
+  "author": {
+    "name": "Godrix"
+  },
+  "server": {
+    "type": "node",
+    "entry_point": "build/server.js",
+    "mcp_config": {
+      "command": "node",
+      "args": [
+        "${__dirname}/build/server.js"
+      ],
+      "env": {
+        "ARGOCD_URL": "${user_config.argocd_url}",
+        "ARGOCD_DEFAULT_PROFILE": "${user_config.argocd_default_profile}",
+        "ARGOCD_PROFILES": "${user_config.argocd_profiles}",
+        "ARGOCD_URL_PROFILES": "${user_config.argocd_url_profiles}",
+        "ARGOCD_API_KEY": "${user_config.argocd_api_key}",
+        "ARGOCD_READ_ONLY": "${user_config.argocd_read_only}",
+        "ARGOCD_ALLOW_REFRESH": "${user_config.argocd_allow_refresh}"
+      }
+    }
+  },
+  "user_config": {
+    "argocd_url": {
+      "type": "string",
+      "title": "Argo CD URL (single instance)",
+      "description": "Use alone for one Argo CD. Do not set together with Profiles + URL profiles.",
+      "required": false
+    },
+    "argocd_default_profile": {
+      "type": "string",
+      "title": "Default profile name",
+      "description": "Required for multi-env mode (e.g. qa). Must match an entry in Profiles.",
+      "required": false,
+      "default": "qa"
+    },
+    "argocd_profiles": {
+      "type": "string",
+      "title": "Profile names (multi-env)",
+      "description": "Comma-separated names, e.g. qa,stg,prod. Requires Default profile + URL profiles.",
+      "required": false
+    },
+    "argocd_url_profiles": {
+      "type": "string",
+      "title": "Profile URLs (multi-env)",
+      "description": "Comma-separated URLs in the same order as Profiles.",
+      "required": false
+    },
+    "argocd_api_key": {
+      "type": "string",
+      "title": "API key / token",
+      "description": "Bearer token from Argo CD UI or argocd account generate-token. Alternative to SSO login.",
+      "sensitive": true,
+      "required": false
+    },
+    "argocd_read_only": {
+      "type": "boolean",
+      "title": "Read-only mode",
+      "description": "When true, blocks sync and other mutations.",
+      "required": false,
+      "default": true
+    },
+    "argocd_allow_refresh": {
+      "type": "boolean",
+      "title": "Allow refresh-application",
+      "description": "When false, blocks refresh-application tool.",
+      "required": false,
+      "default": true
+    }
+  },
+  "tools_generated": true,
+  "license": "MIT",
+  "compatibility": {
+    "platforms": [
+      "darwin",
+      "win32",
+      "linux"
+    ],
+    "runtimes": {
+      "node": ">=20.0.0"
+    }
+  }
+}

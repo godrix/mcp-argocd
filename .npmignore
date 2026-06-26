@@ -1,0 +1,37 @@
+# Fontes TypeScript (publicado só build/)
+src/
+test/
+scripts/
+tsconfig.json
+
+# IDE, Cursor e configs locais
+.cursor/
+.vscode/
+*.code-workspace
+
+# Git e CI
+.git/
+.github/
+.gitignore
+.mcpbignore
+manifest.json
+*.mcpb
+
+# Logs, cache e ambiente
+*.log
+npm-debug.log*
+coverage/
+.nyc_output/
+*.tsbuildinfo
+.env
+.env.*
+
+# SO
+.DS_Store
+Thumbs.db
+
+# Source maps (opcional no pacote)
+build/**/*.map
+
+# Dependências (npm já ignora, redundância explícita)
+node_modules/
