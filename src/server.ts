@@ -33,7 +33,7 @@ async function main() {
   const status = argoCdService.getProfilesAuthStatus();
 
   const server = new McpServer({
-    name: "@godrix/mcp-argocd",
+    name: "@godrix/argocd-mcp",
     version: packageJson.version,
   });
 

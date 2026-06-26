@@ -1,4 +1,4 @@
-# @godrix/mcp-argocd
+# @godrix/argocd-mcp
 
 MCP Server for **Argo CD**: multi-environment profiles (qa/stg/prod), SSO or API-key auth, application search cache, and REST tools from the bundled OpenAPI catalog.
 
@@ -30,7 +30,7 @@ No clone required after publish:
   "mcpServers": {
     "argocd": {
       "command": "npx",
-      "args": ["-y", "@godrix/mcp-argocd"],
+      "args": ["-y", "@godrix/argocd-mcp"],
       "env": {
         "ARGOCD_URL": "https://argocd-qa.example.io",
         "ARGOCD_API_KEY": "eyJhbGciOi...",
@@ -48,7 +48,7 @@ Multi-environment:
   "mcpServers": {
     "argocd": {
       "command": "npx",
-      "args": ["-y", "@godrix/mcp-argocd"],
+      "args": ["-y", "@godrix/argocd-mcp"],
       "env": {
         "ARGOCD_DEFAULT_PROFILE": "qa",
         "ARGOCD_PROFILES": "qa,stg,prod",
@@ -222,7 +222,7 @@ No `USE_SSO` env var — SSO is the default for `argocd_login`.
 sequenceDiagram
     participant User
     participant Cursor
-    participant MCP as mcp-argocd
+    participant MCP as argocd-mcp
     participant CLI as argocd CLI
     participant Browser
     participant IdP as Azure OIDC
